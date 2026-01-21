@@ -49,7 +49,7 @@ pipeline {
                     docker stop hola-mundo-node 2>/dev/null || true
                     docker rm hola-mundo-node 2>/dev/null || true
 
-                    # Si algún contenedor está usando el puerto 3006, lo liberamos
+                    # Liberar el puerto 3006 si está ocupado por otro contenedor
                     CID=$(docker ps -q --filter "publish=3006")
                     if [ -n "$CID" ]; then
                         docker stop $CID || true
