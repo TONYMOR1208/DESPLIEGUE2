@@ -8,6 +8,6 @@ RUN npm install
 COPY index.js .
 COPY users.json .
 
-EXPOSE 3005
+EXPOSE 3006
 
 CMD ["node", "index.js"]

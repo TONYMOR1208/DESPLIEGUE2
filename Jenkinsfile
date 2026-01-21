@@ -49,15 +49,16 @@ pipeline {
                     docker stop hola-mundo-node 2>/dev/null || true
                     docker rm hola-mundo-node 2>/dev/null || true
 
-                    # Si algún contenedor está usando el puerto 3005, lo liberamos
-                    CID=$(docker ps -q --filter "publish=3005")
-                    if [ ! -z "$CID" ]; then
+                    # Si algún contenedor está usando el puerto 3006, lo liberamos
+                    CID=$(docker ps -q --filter "publish=3006")
+                    if [ -n "$CID" ]; then
                         docker stop $CID || true
                         docker rm $CID || true
                     fi
                     set -e
 
-                    docker run -d --name hola-mundo-node -p 3005:3005 hola-mundo-node:latest
+                    docker run -d --name hola-mundo-node -p 3006:3006 hola-mundo-node:latest
+                    docker ps | grep hola-mundo-node
                 '''
             }
         }
