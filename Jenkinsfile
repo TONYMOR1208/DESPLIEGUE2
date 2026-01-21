@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        // Esto le dice al cliente que use una versión de API que sí entienda
         DOCKER_API_VERSION = '1.44'
     }
 
@@ -32,31 +31,33 @@ pipeline {
 
         stage('Ejecutar tests') {
             steps {
-                // Soluciona el problema de permisos (cuando el bin no viene ejecutable)
                 sh 'chmod +x ./node_modules/.bin/jest || true'
                 sh 'npm test -- --ci --runInBand'
             }
         }
 
         stage('Construir Imagen Docker') {
-            when {
-                expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
-            }
             steps {
                 sh 'docker build -t hola-mundo-node:latest .'
             }
         }
 
         stage('Ejecutar Contenedor Node.js') {
-            when {
-                expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
-            }
             steps {
                 sh '''
-                    docker stop hola-mundo-node || true
-                    docker rm hola-mundo-node || true
+                    set +e
+                    docker stop hola-mundo-node 2>/dev/null || true
+                    docker rm hola-mundo-node 2>/dev/null || true
 
-                    docker run -d --name hola-mundo-node -p 3000:3000 hola-mundo-node:latest
+                    # Si algún contenedor está usando el puerto 3005, lo liberamos
+                    CID=$(docker ps -q --filter "publish=3005")
+                    if [ ! -z "$CID" ]; then
+                        docker stop $CID || true
+                        docker rm $CID || true
+                    fi
+                    set -e
+
+                    docker run -d --name hola-mundo-node -p 3005:3005 hola-mundo-node:latest
                 '''
             }
         }
